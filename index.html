@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CacheFlow — Interactive Cache Memory Simulator</title>
+  <meta name="description" content="An interactive Operating Systems educational simulator demonstrating CPU cache memory, L1/L2/L3 hierarchy, FIFO replacement, and locality of reference.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="2"/>
+            <rect x="9" y="9" width="6" height="6"/>
+            <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">CacheFlow</span>
+          <span class="brand-tag">OS Simulator</span>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a href="#overview" class="nav-link active">Overview</a>
+        <a href="#architecture" class="nav-link">Architecture</a>
+        <a href="#simulator" class="nav-link">Simulator</a>
+        <a href="#analytics" class="nav-link">Analytics</a>
+        <a href="#locality" class="nav-link">Locality</a>
+        <a href="#learning" class="nav-link">Learning</a>
+      </nav>
+      <div class="nav-status">
+        <span class="status-dot"></span>
+        <span class="status-label">System Active</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- SECTION A: Dashboard / Overview -->
+    <section id="overview" class="section overview-section">
+      <div class="section-header">
+        <div class="badge-pill">Operating Systems Assignment</div>
+        <h1 class="hero-title">Interactive Cache Memory Simulator</h1>
+        <p class="hero-subtitle">
+          Explore how high-speed CPU cache stores frequently requested data to bridge the critical speed gap between the ultra-fast processor and slower main memory (RAM).
+        </p>
+      </div>
+
+      <!-- Quick Concept Summary Cards -->
+      <div class="grid grid-3 overview-grid">
+        <div class="card intro-card">
+          <div class="card-icon cyan">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <h3 class="card-title">The Memory Gap</h3>
+          <p class="card-desc">
+            Modern CPUs execute billions of cycles per second (sub-nanosecond). Reading directly from RAM requires 60–100ns, leaving the CPU idle during memory wait states.
+          </p>
+        </div>
+
+        <div class="card intro-card">
+          <div class="card-icon blue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          </div>
+          <h3 class="card-title">What is Cache?</h3>
+          <p class="card-desc">
+            Cache is small, extremely fast SRAM placed directly on or adjacent to the CPU chip. It stores recently accessed blocks so subsequent requests can be served instantly.
+          </p>
+        </div>
+
+        <div class="card intro-card">
+          <div class="card-icon teal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <h3 class="card-title">Hit vs Miss Principle</h3>
+          <p class="card-desc">
+            A <strong>Cache Hit</strong> satisfies the request from SRAM with zero delay. A <strong>Cache Miss</strong> fetches the data from RAM into cache, replacing old data if full.
+          </p>
+        </div>
+      </div>
+
+      <!-- Memory Hierarchy Diagram Banner -->
+      <div class="card hierarchy-card">
+        <div class="card-header-bar">
+          <span class="panel-tag">Hierarchy Overview</span>
+          <span class="panel-hint">CPU → Cache Layers → RAM → Storage</span>
+        </div>
+        <div class="hierarchy-flow">
+          <div class="hierarchy-step step-cpu">
+            <span class="step-badge">Core Engine</span>
+            <span class="step-title">CPU Registers</span>
+            <span class="step-meta">&lt; 1 KB &bull; ~0.3 ns</span>
+          </div>
+          <div class="hierarchy-arrow">➔</div>
+          <div class="hierarchy-step step-l1 highlight">
+            <span class="step-badge">Level 1</span>
+            <span class="step-title">L1 Cache</span>
+            <span class="step-meta">32–64 KB &bull; ~1 ns</span>
+          </div>
+          <div class="hierarchy-arrow">➔</div>
+          <div class="hierarchy-step step-l2 highlight">
+            <span class="step-badge">Level 2</span>
+            <span class="step-title">L2 Cache</span>
+            <span class="step-meta">256–512 KB &bull; ~4 ns</span>
+          </div>
+          <div class="hierarchy-arrow">➔</div>
+          <div class="hierarchy-step step-l3 highlight">
+            <span class="step-badge">Level 3</span>
+            <span class="step-title">L3 Cache</span>
+            <span class="step-meta">8–32 MB &bull; ~12 ns</span>
+          </div>
+          <div class="hierarchy-arrow">➔</div>
+          <div class="hierarchy-step step-ram">
+            <span class="step-badge">Main Memory</span>
+            <span class="step-title">DRAM (RAM)</span>
+            <span class="step-meta">16–64 GB &bull; ~70 ns</span>
+          </div>
+        </div>
+        <div class="hierarchy-legend">
+          <div class="legend-item"><span class="legend-indicator speed"></span> Faster Access Time (Left)</div>
+          <div class="legend-item"><span class="legend-indicator capacity"></span> Higher Storage Capacity (Right)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION B: Cache Architecture -->
+    <section id="architecture" class="section architecture-section">
+      <div class="section-header">
+        <div class="badge-pill">Hardware Hierarchy</div>
+        <h2 class="section-title">Multi-Level Cache Architecture</h2>
+        <p class="section-subtitle">
+          Click on any cache level to inspect its engineering characteristics, access latency, and role within modern processors.
+        </p>
+      </div>
+
+      <div class="architecture-layout">
+        <!-- Interactive Architectural Pipeline -->
+        <div class="arch-pipeline">
+          <div class="arch-node cpu-node" data-target="cpu">
+            <div class="arch-node-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2M9 2v2M15 20v2M9 20v2M2 15h2M2 9h2M20 15h2M20 9h2"/></svg>
+            </div>
+            <div class="arch-node-content">
+              <span class="arch-tag">Processor</span>
+              <h4>CPU Execution Core</h4>
+              <p>Generates memory address read/write instructions</p>
+            </div>
+            <span class="arch-speed">3–5 GHz Clock</span>
+          </div>
+
+          <div class="pipeline-connector">
+            <div class="connector-line"></div>
+            <span class="connector-label">Step 1: Check L1</span>
+          </div>
+
+          <div class="arch-node cache-node active-node" id="node-l1" data-target="l1">
+            <div class="arch-badge">L1</div>
+            <div class="arch-node-content">
+              <h4>L1 Cache (Primary Cache)</h4>
+              <p>Split into L1 Instruction &amp; L1 Data cache inside the core</p>
+            </div>
+            <div class="arch-stats-pill">
+              <span class="stat-time">~0.5 – 1 ns</span>
+              <span class="stat-cap">32–64 KB</span>
+            </div>
+          </div>
+
+          <div class="pipeline-connector">
+            <div class="connector-line"></div>
+            <span class="connector-label">Miss: Check L2</span>
+          </div>
+
+          <div class="arch-node cache-node" id="node-l2" data-target="l2">
+            <div class="arch-badge">L2</div>
+            <div class="arch-node-content">
+              <h4>L2 Cache (Secondary Cache)</h4>
+              <p>Dedicated intermediate cache per core for L1 spillover</p>
+            </div>
+            <div class="arch-stats-pill">
+              <span class="stat-time">~3 – 7 ns</span>
+              <span class="stat-cap">256 KB – 1 MB</span>
+            </div>
+          </div>
+
+          <div class="pipeline-connector">
+            <div class="connector-line"></div>
+            <span class="connector-label">Miss: Check L3</span>
+          </div>
+
+          <div class="arch-node cache-node" id="node-l3" data-target="l3">
+            <div class="arch-badge">L3</div>
+            <div class="arch-node-content">
+              <h4>L3 Cache (Last Level Cache - LLC)</h4>
+              <p>Shared across all CPU cores on the silicon die</p>
+            </div>
+            <div class="arch-stats-pill">
+              <span class="stat-time">~10 – 20 ns</span>
+              <span class="stat-cap">8 – 64 MB</span>
+            </div>
+          </div>
+
+          <div class="pipeline-connector">
+            <div class="connector-line"></div>
+            <span class="connector-label">Miss: Fetch from RAM</span>
+          </div>
+
+          <div class="arch-node ram-node" data-target="ram">
+            <div class="arch-node-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 19v-3M10 19v-3M14 19v-3M18 19v-3M6 8V5M10 8V5M14 8V5M18 8V5M4 8h16v8H4z"/></svg>
+            </div>
+            <div class="arch-node-content">
+              <span class="arch-tag">System Memory</span>
+              <h4>Main Memory (DRAM)</h4>
+              <p>High capacity, volatile system storage accessed over memory bus</p>
+            </div>
+            <span class="arch-speed">~60–100 ns Latency</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Info Panel -->
+        <div class="arch-detail-panel card">
+          <div class="card-header-bar">
+            <span class="panel-tag" id="arch-detail-tag">Architecture Detail</span>
+            <span class="panel-hint">Click cards on left to switch</span>
+          </div>
+          <div class="arch-detail-body" id="arch-detail-content">
+            <!-- Populated dynamically via JS -->
+            <div class="detail-header">
+              <span class="level-indicator-badge" id="detail-badge">L1 CACHE</span>
+              <h3 id="detail-title">Level 1 (L1) Cache</h3>
+              <p class="detail-subtitle" id="detail-subtitle">Integrated directly into each processor execution pipeline.</p>
+            </div>
+
+            <div class="detail-metrics-grid">
+              <div class="metric-box">
+                <span class="metric-label">Access Latency</span>
+                <span class="metric-value" id="detail-latency">~0.5 – 1.0 ns (1–4 clock cycles)</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">Typical Capacity</span>
+                <span class="metric-value" id="detail-capacity">32 KB – 64 KB per core</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">Physical Location</span>
+                <span class="metric-value" id="detail-location">Directly inside the CPU execution core</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">Architecture Split</span>
+                <span class="metric-value" id="detail-split">Harvard: Split into L1-I (Instructions) &amp; L1-D (Data)</span>
+              </div>
+            </div>
+
+            <div class="detail-description">
+              <h4>Role in Memory Hierarchy</h4>
+              <p id="detail-desc">
+                L1 cache is the fastest memory on the processor chip aside from CPU registers. It operates synchronously with the processor core clock frequency. By keeping the hottest loops and variables in L1, the CPU avoids waiting for slower off-chip buses.
+              </p>
+            </div>
+
+            <div class="detail-callout">
+              <span class="callout-icon">💡</span>
+              <p id="detail-tip">
+                <strong>OS Concept:</strong> Because L1 runs at the processor’s native clock speed, hit rate here directly dictates instruction throughput (IPC).
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION C: Interactive Cache Simulator -->
+    <section id="simulator" class="section simulator-section">
+      <div class="section-header">
+        <div class="badge-pill highlight">Main Assignment Feature</div>
+        <h2 class="section-title">Interactive 4-Slot Cache Simulator</h2>
+        <p class="section-subtitle">
+          Test real memory address requests. Observe Cache Hits, Cache Misses, and the First-In, First-Out (FIFO) replacement policy in action.
+        </p>
+      </div>
+
+      <!-- Simulator Dashboard -->
+      <div class="simulator-wrapper">
+        <!-- Control Deck -->
+        <div class="card sim-controls-card">
+          <div class="card-header-bar">
+            <span class="panel-tag">Simulator Controls</span>
+            <span class="panel-hint">Enter single address or run a batch sequence</span>
+          </div>
+
+          <div class="sim-controls-grid">
+            <!-- Single Request Control -->
+            <div class="control-group">
+              <label for="address-input" class="input-label">Memory Address (Block ID):</label>
+              <div class="input-action-row">
+                <input type="text" id="address-input" placeholder="e.g. 10 or 0x1A" maxlength="6" autocomplete="off">
+                <button id="btn-access" class="btn btn-primary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Access
+                </button>
+                <button id="btn-random" class="btn btn-secondary" title="Pick a random address from typical working set">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/><circle cx="15.5" cy="8.5" r="1.5"/><circle cx="8.5" cy="15.5" r="1.5"/></svg>
+                  Random
+                </button>
+              </div>
+              <span class="field-hint">Accepts decimal (e.g. 10, 20) or hex (0x1F) block identifiers.</span>
+            </div>
+
+            <!-- Sequence Runner Control -->
+            <div class="control-group">
+              <label for="sequence-input" class="input-label">Address Sequence (Comma-Separated):</label>
+              <div class="input-action-row">
+                <input type="text" id="sequence-input" value="10, 20, 10, 30, 20, 40" placeholder="e.g. 10, 20, 10, 30, 20, 40">
+                <button id="btn-run-seq" class="btn btn-accent">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Run Sequence
+                </button>
+                <button id="btn-stop-seq" class="btn btn-danger" disabled>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12"/></svg>
+                  Stop
+                </button>
+              </div>
+              <div class="sequence-presets">
+                <span class="preset-label">Quick Presets:</span>
+                <button class="preset-chip" data-seq="10, 20, 10, 30, 20, 40">Default (College Ex.)</button>
+                <button class="preset-chip" data-seq="10, 10, 10, 20, 20, 10">Temporal Heavy</button>
+                <button class="preset-chip" data-seq="10, 11, 12, 13, 14, 15">Spatial Walk</button>
+                <button class="preset-chip" data-seq="1, 2, 3, 4, 5, 1, 2">FIFO Thrashing</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="controls-footer">
+            <div class="sim-speed-control">
+              <label for="speed-select" class="speed-label">Execution Speed:</label>
+              <select id="speed-select" class="custom-select">
+                <option value="1200">Slow (1.2s delay)</option>
+                <option value="750" selected>Normal (0.75s delay)</option>
+                <option value="350">Fast (0.35s delay)</option>
+              </select>
+            </div>
+
+            <button id="btn-reset" class="btn btn-outline-danger">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              Reset Simulator &amp; Stats
+            </button>
+          </div>
+        </div>
+
+        <!-- Simulation Feedback Banner -->
+        <div id="status-banner" class="status-banner status-idle">
+          <div class="status-icon-wrap">
+            <span class="status-indicator-icon">⚡</span>
+          </div>
+          <div class="status-text-wrap">
+            <div class="status-title-row">
+              <span id="status-type" class="status-pill idle">READY</span>
+              <span id="status-headline" class="status-headline">Simulator Ready — Request a memory address to begin</span>
+            </div>
+            <p id="status-detail" class="status-detail">Enter an address like 10 or click "Run Sequence" to watch cache lookups step by step.</p>
+          </div>
+        </div>
+
+        <!-- Visual 4-Slot Cache Grid -->
+        <div class="cache-view-card card">
+          <div class="card-header-bar">
+            <span class="panel-tag">Cache Memory State (4 Blocks Capacity)</span>
+            <span class="panel-hint">Replacement Policy: First-In, First-Out (FIFO)</span>
+          </div>
+
+          <div class="slots-container">
+            <!-- Slot 0 -->
+            <div class="slot-card" id="slot-0" data-slot="0">
+              <div class="slot-header">
+                <span class="slot-idx">SLOT 0</span>
+                <span class="slot-state-badge empty">EMPTY</span>
+              </div>
+              <div class="slot-body">
+                <span class="slot-data-label">Stored Block:</span>
+                <div class="slot-value">—</div>
+              </div>
+              <div class="slot-footer">
+                <span class="slot-order">Age: None</span>
+                <span class="slot-fifo-tag">—</span>
+              </div>
+            </div>
+
+            <!-- Slot 1 -->
+            <div class="slot-card" id="slot-1" data-slot="1">
+              <div class="slot-header">
+                <span class="slot-idx">SLOT 1</span>
+                <span class="slot-state-badge empty">EMPTY</span>
+              </div>
+              <div class="slot-body">
+                <span class="slot-data-label">Stored Block:</span>
+                <div class="slot-value">—</div>
+              </div>
+              <div class="slot-footer">
+                <span class="slot-order">Age: None</span>
+                <span class="slot-fifo-tag">—</span>
+              </div>
+            </div>
+
+            <!-- Slot 2 -->
+            <div class="slot-card" id="slot-2" data-slot="2">
+              <div class="slot-header">
+                <span class="slot-idx">SLOT 2</span>
+                <span class="slot-state-badge empty">EMPTY</span>
+              </div>
+              <div class="slot-body">
+                <span class="slot-data-label">Stored Block:</span>
+                <div class="slot-value">—</div>
+              </div>
+              <div class="slot-footer">
+                <span class="slot-order">Age: None</span>
+                <span class="slot-fifo-tag">—</span>
+              </div>
+            </div>
+
+            <!-- Slot 3 -->
+            <div class="slot-card" id="slot-3" data-slot="3">
+              <div class="slot-header">
+                <span class="slot-idx">SLOT 3</span>
+                <span class="slot-state-badge empty">EMPTY</span>
+              </div>
+              <div class="slot-body">
+                <span class="slot-data-label">Stored Block:</span>
+                <div class="slot-value">—</div>
+              </div>
+              <div class="slot-footer">
+                <span class="slot-order">Age: None</span>
+                <span class="slot-fifo-tag">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- FIFO Queue Visualizer -->
+          <div class="fifo-queue-bar">
+            <span class="queue-label">FIFO Eviction Queue:</span>
+            <div class="queue-slots" id="fifo-queue-display">
+              <span class="queue-empty">Cache is empty — no replacement pending</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Execution History Log -->
+        <div class="log-card card">
+          <div class="card-header-bar">
+            <div class="header-left">
+              <span class="panel-tag">Step-by-Step Execution Log</span>
+              <span id="log-count" class="log-count-badge">0 events</span>
+            </div>
+            <button id="btn-clear-log" class="btn btn-xs btn-outline">Clear Log</button>
+          </div>
+          <div class="log-table-container">
+            <table class="log-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Address</th>
+                  <th>Outcome</th>
+                  <th>Action Taken</th>
+                  <th>Cache Snapshot [0, 1, 2, 3]</th>
+                </tr>
+              </thead>
+              <tbody id="log-table-body">
+                <tr class="empty-row">
+                  <td colspan="5">No memory requests executed yet. Access an address above to generate event logs.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION D: Performance Analytics -->
+    <section id="analytics" class="section analytics-section">
+      <div class="section-header">
+        <div class="badge-pill">Metrics &amp; Formulas</div>
+        <h2 class="section-title">Performance Analytics</h2>
+        <p class="section-subtitle">
+          Real-time metrics computed directly from simulator operations. Understand the mathematical effectiveness of caching.
+        </p>
+      </div>
+
+      <!-- KPI Metric Cards -->
+      <div class="grid grid-4 kpi-grid">
+        <div class="kpi-card card">
+          <span class="kpi-label">Total Requests</span>
+          <div class="kpi-value" id="kpi-total">0</div>
+          <span class="kpi-meta">Memory access operations</span>
+        </div>
+
+        <div class="kpi-card card hit-card">
+          <span class="kpi-label">Cache Hits</span>
+          <div class="kpi-value text-hit" id="kpi-hits">0</div>
+          <span class="kpi-meta">Served directly from cache</span>
+        </div>
+
+        <div class="kpi-card card miss-card">
+          <span class="kpi-label">Cache Misses</span>
+          <div class="kpi-value text-miss" id="kpi-misses">0</div>
+          <span class="kpi-meta">Required fetching from RAM</span>
+        </div>
+
+        <div class="kpi-card card ratio-card">
+          <span class="kpi-label">Hit Ratio</span>
+          <div class="kpi-value text-ratio" id="kpi-hit-ratio">0.0%</div>
+          <span class="kpi-meta">Miss Ratio: <span id="kpi-miss-ratio">0.0%</span></span>
+        </div>
+      </div>
+
+      <!-- Visual Distribution Chart & Formulas -->
+      <div class="grid grid-2 analytics-bottom-grid">
+        <!-- Distribution Bar Card -->
+        <div class="card distribution-card">
+          <div class="card-header-bar">
+            <span class="panel-tag">Hit vs Miss Distribution</span>
+            <span class="panel-hint" id="dist-sample-label">0 total samples</span>
+          </div>
+
+          <div class="distribution-visual">
+            <div class="dist-bar-track">
+              <div class="dist-bar-fill hit" id="dist-hit-fill" style="width: 50%;">
+                <span class="dist-fill-label" id="dist-hit-label">50% Hits</span>
+              </div>
+              <div class="dist-bar-fill miss" id="dist-miss-fill" style="width: 50%;">
+                <span class="dist-fill-label" id="dist-miss-label">50% Misses</span>
+              </div>
+            </div>
+            <div class="dist-legend">
+              <div class="legend-chip hit"><span class="chip-color hit"></span> Cache Hits (<span id="legend-hits">0</span>)</div>
+              <div class="legend-chip miss"><span class="chip-color miss"></span> Cache Misses (<span id="legend-misses">0</span>)</div>
+            </div>
+          </div>
+
+          <div class="perf-insight-box">
+            <span class="insight-icon">📊</span>
+            <p id="perf-insight-text">
+              Run simulator requests to observe the hit ratio curve. In real programs with strong locality, hit ratios routinely reach 90%–98%.
+            </p>
+          </div>
+        </div>
+
+        <!-- Mathematical Formulas Card -->
+        <div class="card formulas-card">
+          <div class="card-header-bar">
+            <span class="panel-tag">College OS Formulas</span>
+            <span class="panel-hint">Standard Exam Evaluation</span>
+          </div>
+
+          <div class="formula-list">
+            <div class="formula-box">
+              <span class="formula-name">1. Hit Ratio (H)</span>
+              <div class="formula-code">Hit Ratio = (Total Cache Hits / Total Requests) × 100%</div>
+              <span class="formula-calc" id="calc-hit-formula">Formula: (0 / 0) × 100 = 0.00%</span>
+            </div>
+
+            <div class="formula-box">
+              <span class="formula-name">2. Miss Ratio (M)</span>
+              <div class="formula-code">Miss Ratio = (Total Cache Misses / Total Requests) × 100%</div>
+              <span class="formula-calc" id="calc-miss-formula">Formula: (0 / 0) × 100 = 0.00%</span>
+            </div>
+
+            <div class="formula-box">
+              <span class="formula-name">3. Average Memory Access Time (AMAT)</span>
+              <div class="formula-code">AMAT = Hit Time + (Miss Rate × Miss Penalty)</div>
+              <span class="formula-calc">Assuming Hit = 1ns, RAM Penalty = 50ns</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION E: Locality of Reference -->
+    <section id="locality" class="section locality-section">
+      <div class="section-header">
+        <div class="badge-pill">Core Operating System Principle</div>
+        <h2 class="section-title">Locality of Reference</h2>
+        <p class="section-subtitle">
+          Caches work efficiently because programs do not access memory randomly. Over 90% of execution time is spent in less than 10% of the code.
+        </p>
+      </div>
+
+      <div class="grid grid-2 locality-grid">
+        <!-- Temporal Locality Card -->
+        <div class="card locality-card">
+          <div class="locality-badge-row">
+            <span class="badge-pill cyan">Principle 1</span>
+            <span class="locality-type">Temporal Locality</span>
+          </div>
+          <h3 class="locality-title">Recently Accessed Memory is Likely to be Accessed Again Soon</h3>
+          <p class="locality-desc">
+            When a variable or instruction is fetched, there is a strong probability the CPU will request the exact same memory address within the next few cycles (e.g. accumulator variables, loop iterators).
+          </p>
+
+          <div class="code-preview">
+            <div class="code-header">
+              <span>C Code Example: Loop Variable</span>
+              <span class="lang-tag">C / C++</span>
+            </div>
+            <pre><code><span class="c-keyword">int</span> sum = 0;
+<span class="c-keyword">for</span> (<span class="c-keyword">int</span> i = 0; i &lt; 1000; i++) {
+    sum += i; <span class="c-comment">// 'sum' & 'i' accessed 1000 times!</span>
+}</code></pre>
+          </div>
+
+          <div class="locality-sim-action">
+            <p class="action-text">Notice how accessing the same address repeatedly results in continuous 100% cache hits after the initial miss.</p>
+            <button class="btn btn-outline-primary load-temporal-btn" data-seq="10, 10, 10, 10, 20, 20">
+              Load Temporal Test Pattern (10, 10, 10, 10...)
+            </button>
+          </div>
+        </div>
+
+        <!-- Spatial Locality Card -->
+        <div class="card locality-card">
+          <div class="locality-badge-row">
+            <span class="badge-pill teal">Principle 2</span>
+            <span class="locality-type">Spatial Locality</span>
+          </div>
+          <h3 class="locality-title">Nearby Memory Locations are Likely to be Accessed Soon</h3>
+          <p class="locality-desc">
+            When a program references address <code>k</code>, it will almost certainly reference addresses <code>k+1</code>, <code>k+2</code> shortly thereafter (e.g. sequential array traversal, linear code execution).
+          </p>
+
+          <div class="code-preview">
+            <div class="code-header">
+              <span>C Code Example: Sequential Array Scan</span>
+              <span class="lang-tag">C / C++</span>
+            </div>
+            <pre><code><span class="c-keyword">int</span> arr[100];
+<span class="c-keyword">for</span> (<span class="c-keyword">int</span> j = 0; j &lt; 100; j++) {
+    arr[j] = j * 2; <span class="c-comment">// Contiguous adjacent blocks</span>
+}</code></pre>
+          </div>
+
+          <div class="locality-sim-action">
+            <p class="action-text">In real hardware, caches fetch full cache lines (e.g. 64 bytes) to capitalize on this spatial proximity.</p>
+            <button class="btn btn-outline-teal load-spatial-btn" data-seq="10, 11, 12, 13, 14, 15">
+              Load Spatial Test Pattern (10, 11, 12, 13...)
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION F: Learning Section & Glossary -->
+    <section id="learning" class="section learning-section">
+      <div class="section-header">
+        <div class="badge-pill">OS Course Study Guide</div>
+        <h2 class="section-title">Essential Cache Concepts &amp; Theory</h2>
+        <p class="section-subtitle">
+          Clear, concise textbook summaries covering the foundational questions frequently asked in university Operating Systems and Computer Architecture exams.
+        </p>
+      </div>
+
+      <div class="grid grid-2 learning-grid">
+        <div class="card learn-card">
+          <div class="learn-header">
+            <span class="learn-num">01</span>
+            <h3>What is Cache Memory?</h3>
+          </div>
+          <p>
+            Cache memory is an auxiliary high-speed semiconductor memory designed using Static RAM (SRAM). It sits physically closer to the CPU than dynamic main memory (DRAM) and holds duplicate copies of critical instructions and data currently in demand.
+          </p>
+        </div>
+
+        <div class="card learn-card">
+          <div class="learn-header">
+            <span class="learn-num">02</span>
+            <h3>Why is Cache Memory Required?</h3>
+          </div>
+          <p>
+            This requirement stems from the <strong>Memory Wall</strong>: processor clock frequencies have scaled exponentially faster than DRAM access speeds. Without cache, modern processors would waste over 80% of their execution cycles waiting idly for RAM data transfers.
+          </p>
+        </div>
+
+        <div class="card learn-card">
+          <div class="learn-header">
+            <span class="learn-num">03</span>
+            <h3>L1, L2, and L3 Hierarchy</h3>
+          </div>
+          <p>
+            Hardware designers utilize a multi-tier hierarchy: <strong>L1</strong> provides instantaneous 1-cycle latency per core; <strong>L2</strong> balances size and speed (~4ns); and <strong>L3</strong> (Last Level Cache) acts as a large multi-megabyte shared buffer across all active cores before accessing system DRAM.
+          </p>
+        </div>
+
+        <div class="card learn-card">
+          <div class="learn-header">
+            <span class="learn-num">04</span>
+            <h3>Cache Hit vs. Cache Miss</h3>
+          </div>
+          <p>
+            A <strong>Cache Hit</strong> occurs when the processor requests a memory address and finds that block currently stored in cache slots. A <strong>Cache Miss</strong> occurs when the requested address is absent, triggering an eviction and fetch from slower lower-level memory.
+          </p>
+        </div>
+
+        <div class="card learn-card">
+          <div class="learn-header">
+            <span class="learn-num">05</span>
+            <h3>First-In, First-Out (FIFO) Replacement</h3>
+          </div>
+          <p>
+            When a cache miss occurs and all slots are occupied, the cache controller must decide which entry to evict. Under <strong>FIFO</strong>, the entry that has resided in the cache for the longest time is replaced first, tracked via a simple circular queue or insertion timestamp.
+          </p>
+        </div>
+
+        <div class="card learn-card">
+          <div class="learn-header">
+            <span class="learn-num">06</span>
+            <h3>Hit Ratio &amp; AMAT Evaluation</h3>
+          </div>
+          <p>
+            Cache efficiency is quantified by the <strong>Hit Ratio</strong>: \(\frac{\text{Hits}}{\text{Total Requests}}\). As hit ratio approaches 100%, Average Memory Access Time (AMAT) converges to the ultra-fast cache access time, shielding the CPU from RAM delays.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-brand">CacheFlow</span>
+        <span class="footer-meta">Operating Systems Mini-Project &bull; Department of Computer Science &amp; Engineering</span>
+      </div>
+      <div class="footer-right">
+        <span class="footer-tag">Client-side Vanilla JS &bull; Vercel Ready</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
