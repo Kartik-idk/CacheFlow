@@ -843,3 +843,4 @@ document.addEventListener('DOMContentLoaded', () => {
   updateAnalyticsUI();
   console.log('CacheFlow Simulator initialized successfully.');
 });
+
