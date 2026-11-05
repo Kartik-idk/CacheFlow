@@ -1,0 +1,11 @@
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node and validation artifacts
+node_modules/
+npm-debug.log*
+coverage/
+dist/
