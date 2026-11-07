@@ -3,7 +3,17 @@ name: Static checks
 on:
   push:
     branches: [main]
+    paths:
+      - 'script.js'
+      - 'index.html'
+      - 'style.css'
+      - '.github/workflows/**'
   pull_request:
+    paths:
+      - 'script.js'
+      - 'index.html'
+      - 'style.css'
+      - '.github/workflows/**'
 
 permissions:
   contents: read
